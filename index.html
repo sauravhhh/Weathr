@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weathr - Minimalistic Weather App</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="description" content="Minimalistic weather app with beautiful sunrise/sunset visualization">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Weathr">
+  
+  <!-- PWA Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #ffffff;
+      color: #202124;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px;
+    }
+
+    .container {
+      background: #f8f9fa;
+      border-radius: 20px;
+      max-width: 420px;
+      width: 100%;
+      padding: 30px;
+      box-shadow: 0 1px 6px rgba(32, 33, 36, 0.08);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 500;
+      margin-bottom: 25px;
+      color: #202124;
+      letter-spacing: 0.5px;
+    }
+
+    .location-input {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 1rem;
+      border: 1px solid #dadce0;
+      border-radius: 25px;
+      outline: none;
+      margin-bottom: 20px;
+      transition: border-color 0.3s ease;
+      background: #fff;
+    }
+
+    .location-input::placeholder {
+      color: #80868b;
+    }
+
+    .location-input:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 8px rgba(26, 115, 232, 0.2);
+    }
+
+    .search-btn {
+      width: 100%;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 14px 0;
+      font-weight: 500;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      letter-spacing: 0.8px;
+    }
+
+    .search-btn:hover {
+      background: #1557b0;
+      box-shadow: 0 1px 3px rgba(26, 115, 232, 0.4);
+    }
+
+    .loading {
+      color: #5f6368;
+      margin: 20px 0;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      display: none;
+    }
+
+    .loading-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #5f6368;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error {
+      color: #ea4335;
+      background: rgba(234, 67, 53, 0.1);
+      padding: 12px 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: none;
+    }
+
+    .weather-container {
+      display: none;
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .location-header {
+      margin-bottom: 25px;
+    }
+
+    .location-name {
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: #202124;
+      margin-bottom: 5px;
+    }
+
+    .location-time {
+      font-size: 0.85rem;
+      color: #5f6368;
+      font-weight: 400;
+    }
+
+    .weather-icon {
+      font-size: 70px;
+      margin: 20px 0;
+    }
+
+    .temperature {
+      font-size: 3rem;
+      font-weight: 300;
+      color: #202124;
+      margin-bottom: 30px;
+    }
+
+    .weather-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .weather-item {
+      background: #fff;
+      border: 1px solid #e8eaed;
+      border-radius: 12px;
+      padding: 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: #3c4043;
+    }
+
+    .weather-icon-small {
+      font-size: 20px;
+    }
+
+    .sun-container {
+      margin-top: 25px;
+      width: 100%;
+      position: relative;
+      height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .perfect-half-circle {
+      width: 220px;
+      height: 110px;
+      border: 3px solid #1a73e8;
+      border-bottom: none;
+      border-top-left-radius: 110px;
+      border-top-right-radius: 110px;
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .sun-times {
+      display: flex;
+      justify-content: space-between;
+      width: 220px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #1a73e8;
+      position: relative;
+    }
+
+    .sun-time-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sun-moon-emoji {
+      font-size: 32px;
+      user-select: none;
+    }
+
+    .footer {
+      margin-top: 25px;
+      font-size: 0.8rem;
+      color: #80868b;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .install-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a73e8;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      display: none;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 25px 20px;
+        margin: 10px;
+      }
+      
+      .weather-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .perfect-half-circle {
+        width: 180px;
+        height: 90px;
+        border-top-left-radius: 90px;
+        border-top-right-radius: 90px;
+      }
+
+      .sun-times {
+        width: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Weathr</h1>
+    
+    <input type="text" id="locationInput" class="location-input" placeholder="Enter city (e.g. London, New York)">
+    <button id="searchBtn" class="search-btn">Get Weather</button>
+    
+    <div id="loading" class="loading">
+      <div class="loading-spinner"></div>
+      Fetching weather data... <span id="progressPercent">0%</span>
+    </div>
+    
+    <div id="error" class="error"></div>
+    
+    <div id="weatherContainer" class="weather-container">
+      <div class="location-header">
+        <div id="locationName" class="location-name"></div>
+        <div id="locationTime" class="location-time"></div>
+      </div>
+      
+      <div id="weatherIcon" class="weather-icon">☀️</div>
+      
+      <div class="temperature">
+        <span id="tempC">-- °C</span>
+      </div>
+      
+      <div class="weather-grid">
+        <div class="weather-item">
+          <span class="weather-icon-small">💧</span>
+          <div>Humidity: <strong id="humidity">--</strong> (<span id="humidityLevel">--</span>)</div>
+        </div>
+        <div class="weather-item">
+          <span class="weather-icon-small">💨</span>
+          <div>Wind: <strong id="windSpeed">--</strong></div>
+        </div>
+        <div class="weather-item">
+          <span class="weather-icon-small">🧭</span>
+          <div>Direction: <strong id="windDirection">--</strong></div>
+        </div>
+        <div class="weather-item">
+          <span class="weather-icon-small">👁️</span>
+          <div>Visibility: <strong id="visibility">--</strong></div>
+        </div>
+        <div class="weather-item">
+          <span class="weather-icon-small">🌡️</span>
+          <div>Pressure: <strong id="pressure">--</strong></div>
+        </div>
+        <div class="weather-item">
+          <span class="weather-icon-small">💭</span>
+          <div>Feels Like: <strong id="feelsLike">--</strong></div>
+        </div>
+      </div>
+      
+      <div class="sun-container">
+        <div class="perfect-half-circle"></div>
+        <div class="sun-times">
+          <div class="sun-time-item">
+            <div class="sun-moon-emoji">🌞</div>
+            <div id="sunrise">--</div>
+          </div>
+          <div class="sun-time-item">
+            <div class="sun-moon-emoji">🌙</div>
+            <div id="sunset">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      Made with ❤️ by sauravhhh<br>
+      Powered by Open-Meteo API
+    </div>
+  </div>
+
+  <div id="installBanner" class="install-banner">
+    📱 Install Weathr App
+  </div>
+
+  <script>
+    // PWA Install Banner
+    let deferredPrompt;
+    const installBanner = document.getElementById('installBanner');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBanner.style.display = 'block';
+    });
+
+    installBanner.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBanner.style.display = 'none';
+      }
+    });
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(registration => console.log('SW registered'))
+          .catch(registrationError => console.log('SW registration failed'));
+      });
+    }
+
+    const condIcons = {
+      0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 45: '🌫️', 48: '🌫️',
+      51: '🌦️', 53: '🌦️', 55: '🌧️', 61: '🌧️', 63: '🌧️', 65: '⛈️',
+      71: '❄️', 73: '❄️', 75: '❄️', 95: '⛈️', 96: '⛈️', 99: '⛈️'
+    };
+
+    function getDetailedCompassDirection(degrees) {
+      if (degrees >= 348.75 || degrees < 11.25) return 'North';
+      else if (degrees >= 11.25 && degrees < 33.75) return 'North-North-East';
+      else if (degrees >= 33.75 && degrees < 56.25) return 'North-East';
+      else if (degrees >= 56.25 && degrees < 78.75) return 'East-North-East';
+      else if (degrees >= 78.75 && degrees < 101.25) return 'East';
+      else if (degrees >= 101.25 && degrees < 123.75) return 'East-South-East';
+      else if (degrees >= 123.75 && degrees < 146.25) return 'South-East';
+      else if (degrees >= 146.25 && degrees < 168.75) return 'South-South-East';
+      else if (degrees >= 168.75 && degrees < 191.25) return 'South';
+      else if (degrees >= 191.25 && degrees < 213.75) return 'South-South-West';
+      else if (degrees >= 213.75 && degrees < 236.25) return 'South-West';
+      else if (degrees >= 236.25 && degrees < 258.75) return 'West-South-West';
+      else if (degrees >= 258.75 && degrees < 281.25) return 'West';
+      else if (degrees >= 281.25 && degrees < 303.75) return 'West-North-West';
+      else if (degrees >= 303.75 && degrees < 326.25) return 'North-West';
+      else if (degrees >= 326.25 && degrees < 348.75) return 'North-North-West';
+    }
+
+    function getHumidityLevel(humidity) {
+      if (humidity < 30) return 'Low';
+      else if (humidity <= 60) return 'Medium';
+      else return 'High';
+    }
+
+    async function getWeather() {
+      const locationInput = document.getElementById('locationInput');
+      const location = locationInput.value.trim();
+      const loading = document.getElementById('loading');
+      const error = document.getElementById('error');
+      const weatherContainer = document.getElementById('weatherContainer');
+      const searchBtn = document.getElementById('searchBtn');
+      const progressPercent = document.getElementById('progressPercent');
+
+      if (!location) {
+        error.textContent = 'Please enter a city name';
+        error.style.display = 'block';
+        weatherContainer.style.display = 'none';
+        return;
+      }
+
+      loading.style.display = 'flex';
+      error.style.display = 'none';
+      weatherContainer.style.display = 'none';
+      progressPercent.textContent = '0%';
+      searchBtn.disabled = true;
+
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        if (progress < 90) {
+          progress += Math.floor(Math.random() * 15) + 5;
+          if (progress > 90) progress = 90;
+          progressPercent.textContent = progress + '%';
+        }
+      }, 200);
+
+      try {
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`);
+        const geoData = await geoRes.json();
+
+        if (!geoData.results || geoData.results.length === 0) {
+          throw new Error('Location not found');
+        }
+
+        const { latitude, longitude, name, country, timezone } = geoData.results[0];
+
+        progress = 95;
+        progressPercent.textContent = progress + '%';
+
+        const weatherRes = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=apparent_temperature,relative_humidity_2m,pressure_msl,visibility&daily=sunrise,sunset&timezone=auto`
+        );
+
+        if (!weatherRes.ok) throw new Error('Weather data not available');
+        const weatherData = await weatherRes.json();
+
+        progress = 100;
+        progressPercent.textContent = progress + '%';
+        clearInterval(progressInterval);
+
+        const current = weatherData.current_weather;
+        const hourly = weatherData.hourly;
+        const daily = weatherData.daily;
+
+        const nowLocalDate = new Date(new Date().toLocaleString("en-US", {timeZone: timezone}));
+        const dd = ('0' + nowLocalDate.getDate()).slice(-2);
+        const mm = ('0' + (nowLocalDate.getMonth() + 1)).slice(-2);
+        const yyyy = nowLocalDate.getFullYear();
+        const localTime = nowLocalDate.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        document.getElementById('locationName').textContent = `${name}, ${country}`;
+        document.getElementById('locationTime').textContent = `Current: ${localTime} (${dd}/${mm}/${yyyy})`;
+        document.getElementById('weatherIcon').textContent = condIcons[current.weathercode] || '☀️';
+        document.getElementById('tempC').textContent = Math.round(current.temperature) + '°C';
+
+        const currentHour = new Date().getHours();
+        let hourIndex = 0;
+        for (let i = 0; i < hourly.time.length; i++) {
+          if (new Date(hourly.time[i]).getHours() === currentHour) {
+            hourIndex = i;
+            break;
+          }
+        }
+
+        const humidity = hourly.relative_humidity_2m[hourIndex];
+        
+        document.getElementById('feelsLike').textContent = Math.round(hourly.apparent_temperature[hourIndex]) + '°C';
+        document.getElementById('humidity').textContent = humidity + '%';
+        document.getElementById('humidityLevel').textContent = getHumidityLevel(humidity);
+        document.getElementById('pressure').textContent = Math.round(hourly.pressure_msl[hourIndex]) + ' hPa';
+        document.getElementById('visibility').textContent = Math.round(hourly.visibility[hourIndex]/1000) + ' km';
+        document.getElementById('windSpeed').textContent = Math.round(current.windspeed) + ' km/h';
+        document.getElementById('windDirection').textContent = getDetailedCompassDirection(current.winddirection);
+        document.getElementById('sunrise').textContent = new Date(daily.sunrise[0]).toLocaleTimeString('en-US', {
+          hour: '2-digit', minute: '2-digit'
+        });
+        document.getElementById('sunset').textContent = new Date(daily.sunset[0]).toLocaleTimeString('en-US', {
+          hour: '2-digit', minute: '2-digit'
+        });
+
+        weatherContainer.style.display = 'block';
+
+      } catch (err) {
+        clearInterval(progressInterval);
+        error.textContent = err.message;
+        error.style.display = 'block';
+      } finally {
+        loading.style.display = 'none';
+        searchBtn.disabled = false;
+        locationInput.value = '';
+      }
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', getWeather);
+    document.getElementById('locationInput').addEventListener('keypress', e => {
+      if (e.key === 'Enter') getWeather();
+    });
+  </script>
+</body>
+  </html>
+  
