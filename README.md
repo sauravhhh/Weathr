@@ -32,7 +32,6 @@ No installation or API keys required!
 
 - **HTML5, CSS3** (Flexbox, Grid, Backdrop-filter), **Vanilla JavaScript**
 - **[Open-Meteo API](https://open-meteo.com/)** for weather data and timezone information
-- **[Open-Meteo Geocoding](https://geocoding-api.open-meteo.com/)** for location coordinates
 - **Custom weather emoji mapping** and glassmorphism effects
 
 ---
