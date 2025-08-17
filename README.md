@@ -21,7 +21,6 @@ No installation or API keys required!
 - **5-day weather forecast** with daily high/low temperatures
 - **Real-time local time display** that updates for each searched location
 - **Comprehensive weather data** - temperature, humidity, wind speed, pressure, UV index
-- **iOS-inspired glassmorphism design** with clean, modern interface
 - **Mobile-first responsive** layout with large touch targets
 - **Location-aware timezone** - shows correct local time for searched places
 - **Weather emoji icons** for clear visual conditions
@@ -83,7 +82,6 @@ Contributions are welcome!
 - Weather alerts and notifications
 - Multiple location bookmarks
 - Dark/light theme toggle
-- Geolocation auto-detection
 
 ---
 
@@ -97,7 +95,6 @@ This project is licensed under the MIT License.
 
 - **Open-Meteo** for providing free global weather APIs with timezone support
 - **Apple HIG & iOS Design** for glassmorphism and interface inspiration
-- **Modern CSS techniques** for backdrop-filter and responsive design
 
 ---
 
