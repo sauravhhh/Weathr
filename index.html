@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
   <title>Weathr - 5 Day Forecast</title>
   <style>
     * {
@@ -35,6 +37,15 @@
       margin: 0 0 24px;
       padding-bottom: 12px;
       border-bottom: 1px solid #111111;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: block;
     }
     .search-row {
       display: flex;
@@ -42,10 +53,36 @@
       align-items: flex-end;
       margin-bottom: 32px;
     }
+    .search-box {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      display: flex;
+    }
+    .clear-btn {
+      position: absolute;
+      right: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      color: #999999;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 6px;
+      display: none;
+    }
+    .clear-btn.visible {
+      display: block;
+    }
+    .clear-btn:hover {
+      color: #111111;
+    }
     .location-input {
       flex: 1;
       min-width: 0;
-      padding: 10px 2px;
+      padding: 10px 28px 10px 2px;
       font-size: 15px;
       color: #111111;
       border: 0;
@@ -263,10 +300,13 @@
 </head>
 <body>
   <div class="container">
-    <h1>Weathr</h1>
+    <h1><img class="logo" src="icons/icon-192x192.png" alt="Weathr logo" />Weathr</h1>
     
     <div class="search-row">
-      <input type="text" class="location-input" id="cityInput" placeholder="Enter place (e.g. New York, Delhi etc)" />
+      <div class="search-box">
+        <input type="text" class="location-input" id="cityInput" placeholder="Enter place (e.g. New York, Delhi etc)" />
+        <button class="clear-btn" id="clearBtn" type="button" aria-label="Clear search" title="Clear">×</button>
+      </div>
       <button class="search-btn" id="getWeatherBtn">Get Weather</button>
     </div>
     
@@ -308,11 +348,6 @@
         <div class="forecast-title">5-Day Forecast</div>
         <div id="forecastList"></div>
       </div>
-
-      <div class="forecast-container">
-        <div class="forecast-title">Last 10 Days</div>
-        <div id="pastList"></div>
-      </div>
     </div>
   </div>
   
@@ -321,6 +356,7 @@
   <script>
     const cityInput = document.getElementById('cityInput');
     const getWeatherBtn = document.getElementById('getWeatherBtn');
+    const clearBtn = document.getElementById('clearBtn');
     const loadingState = document.getElementById('loadingState');
     const errorState = document.getElementById('errorState');
     const weatherSection = document.getElementById('weatherSection');
@@ -335,12 +371,6 @@
     const pressureValue = document.getElementById('pressureValue');
     const uvValue = document.getElementById('uvValue');
     const forecastList = document.getElementById('forecastList');
-    const pastList = document.getElementById('pastList');
-
-    // Daily arrays hold past days + today + forecast days:
-    // indices 0..9 = past 10 days, 10 = today, 11..14 = next 4 days
-    const PAST_DAYS = 10;
-    const TODAY_IDX = PAST_DAYS;
 
     // Store timezone offset for location-based time updates
     let currentTimezoneOffset = 0;
@@ -422,7 +452,7 @@
 
     async function getWeatherData(lat, lon) {
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,wind_speed_10m_max,relative_humidity_2m_mean&timezone=auto&forecast_days=5&past_days=10`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,wind_speed_10m_max,relative_humidity_2m_mean&timezone=auto&forecast_days=5`
       );
       
       if (!response.ok) {
@@ -448,16 +478,16 @@
       humidityValue.textContent = `${current.relative_humidity_2m}%`;
       windValue.textContent = `${Math.round(current.wind_speed_10m)} km/h`;
       pressureValue.textContent = `${Math.round(current.surface_pressure)} hPa`;
-      uvValue.textContent = Math.round(data.daily.uv_index_max[TODAY_IDX]) || 'N/A';
+      uvValue.textContent = Math.round(data.daily.uv_index_max[0]) || 'N/A';
     }
 
     function displayForecast(data) {
       forecastList.innerHTML = '';
       const dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       
-      for (let i = TODAY_IDX; i < TODAY_IDX + 5; i++) {
+      for (let i = 0; i < 5; i++) {
         const date = new Date(data.daily.time[i]);
-        const dayName = i === TODAY_IDX ? 'Today' : dayNamesShort[date.getDay()];
+        const dayName = i === 0 ? 'Today' : dayNamesShort[date.getDay()];
         const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         
         const forecastDay = document.createElement('div');
@@ -482,41 +512,6 @@
         `;
         
         forecastList.appendChild(forecastDay);
-      }
-    }
-
-    function displayPastDays(data) {
-      pastList.innerHTML = '';
-      const dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-      // Most recent first: yesterday at the top, 10 days ago at the bottom
-      for (let i = PAST_DAYS - 1; i >= 0; i--) {
-        const date = new Date(data.daily.time[i]);
-        const dayName = dayNamesShort[date.getDay()];
-        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-        const pastDay = document.createElement('div');
-        pastDay.className = 'forecast-day';
-
-        const windVal = data.daily.wind_speed_10m_max[i] ? Math.round(data.daily.wind_speed_10m_max[i]) : 'N/A';
-        const humidVal = data.daily.relative_humidity_2m_mean[i] ? Math.round(data.daily.relative_humidity_2m_mean[i]) : 'N/A';
-
-        pastDay.innerHTML = `
-          <div class="day-info">
-            <div class="day-name">${dayName}</div>
-            <div class="day-date">${dateStr}</div>
-          </div>
-          <div class="day-temps">
-            <div class="temp-high">${Math.round(data.daily.temperature_2m_max[i])}°</div>
-            <div class="temp-low">${Math.round(data.daily.temperature_2m_min[i])}°</div>
-          </div>
-          <div class="day-details">
-            <div class="mini-detail">Wind ${windVal} km/h</div>
-            <div class="mini-detail">Humidity ${humidVal}%</div>
-          </div>
-        `;
-
-        pastList.appendChild(pastDay);
       }
     }
 
@@ -558,12 +553,22 @@
         
         displayCurrentWeather(weatherData, coords);
         displayForecast(weatherData);
-        displayPastDays(weatherData);
         showWeather();
       } catch (error) {
         showError(error.message);
       }
     }
+
+    function toggleClearBtn() {
+      clearBtn.classList.toggle('visible', cityInput.value.length > 0);
+    }
+
+    cityInput.addEventListener('input', toggleClearBtn);
+    clearBtn.addEventListener('click', () => {
+      cityInput.value = '';
+      toggleClearBtn();
+      cityInput.focus();
+    });
 
     getWeatherBtn.addEventListener('click', fetchWeather);
     cityInput.addEventListener('keypress', (e) => {
