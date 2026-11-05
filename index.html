@@ -15,7 +15,7 @@
       background: #ffffff;
       color: #111111;
       margin: 0;
-      padding: 32px 20px;
+      padding: 28px 20px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -34,24 +34,24 @@
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: #111111;
-      margin: 0 0 24px;
+      margin: 0 0 20px;
       padding-bottom: 12px;
       border-bottom: 1px solid #111111;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
     .logo {
-      width: 28px;
-      height: 28px;
-      border-radius: 7px;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
       display: block;
     }
     .search-row {
       display: flex;
       gap: 12px;
       align-items: flex-end;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
     .search-box {
       flex: 1;
@@ -161,15 +161,15 @@
     }
     .weather-icon {
       font-size: 40px;
-      margin: 20px 0 8px;
+      margin: 16px 0 4px;
     }
     .temp-main {
-      font-size: 72px;
+      font-size: 64px;
       font-weight: 200;
       letter-spacing: -0.03em;
       line-height: 1;
       color: #1a73e8;
-      margin: 8px 0 12px;
+      margin: 4px 0 8px;
     }
     .weather-desc {
       font-size: 13px;
@@ -182,8 +182,8 @@
     .weather-details {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-top: 28px;
+      gap: 20px 16px;
+      margin-top: 24px;
       padding-top: 20px;
       border-top: 1px solid #e5e5e5;
     }
@@ -206,7 +206,7 @@
       color: #111111;
     }
     .forecast-container {
-      margin-top: 40px;
+      margin-top: 32px;
     }
     .forecast-title {
       font-size: 11px;
@@ -222,13 +222,13 @@
     .forecast-day {
       background: transparent;
       border-radius: 0;
-      padding: 16px 0;
+      padding: 14px 0;
       margin-bottom: 0;
       border-bottom: 1px solid #e5e5e5;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
     }
     .day-info {
       flex: 1;
@@ -243,36 +243,29 @@
       font-size: 12px;
       color: #999999;
     }
-    .day-temps {
-      flex: 1;
+    .day-right {
       text-align: right;
+      flex-shrink: 0;
     }
-    .temp-high {
+    .day-temps {
       font-size: 16px;
       font-weight: 600;
       color: #111111;
     }
     .temp-low {
       font-size: 14px;
-      color: #999999;
-    }
-    .day-details {
-      flex: 1.5;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px 12px;
-      font-size: 12px;
-    }
-    .mini-detail {
-      text-align: right;
-      padding: 0;
-      background: transparent;
-      border-radius: 0;
-      color: #666666;
       font-weight: 400;
+      color: #999999;
+      margin-left: 6px;
+    }
+    .day-meta {
+      font-size: 12px;
+      color: #666666;
+      margin-top: 3px;
     }
     .footer {
-      margin: 40px 0 8px;
+      margin: auto 0 8px;
+      padding-top: 32px;
       text-align: center;
       font-size: 12px;
       color: #999999;
@@ -282,18 +275,14 @@
     }
     @media (max-width: 480px) {
       body {
-        padding: 24px 16px;
+        padding: 20px 16px;
       }
       .temp-main {
-        font-size: 60px;
+        font-size: 56px;
       }
       .weather-details {
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
-      }
-      .day-details {
-        grid-template-columns: 1fr;
-        gap: 2px;
+        gap: 20px 16px;
       }
     }
   </style>
@@ -501,13 +490,9 @@
             <div class="day-name">${dayName}</div>
             <div class="day-date">${dateStr}</div>
           </div>
-          <div class="day-temps">
-            <div class="temp-high">${Math.round(data.daily.temperature_2m_max[i])}°</div>
-            <div class="temp-low">${Math.round(data.daily.temperature_2m_min[i])}°</div>
-          </div>
-          <div class="day-details">
-            <div class="mini-detail">Wind ${windVal} km/h</div>
-            <div class="mini-detail">Humidity ${humidVal}%</div>
+          <div class="day-right">
+            <div class="day-temps">${Math.round(data.daily.temperature_2m_max[i])}°<span class="temp-low">${Math.round(data.daily.temperature_2m_min[i])}°</span></div>
+            <div class="day-meta">Wind ${windVal} km/h \u00b7 Humidity ${humidVal}%</div>
           </div>
         `;
         
