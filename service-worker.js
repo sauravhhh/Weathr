@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weathr-cache-v2';
+const CACHE_NAME = 'weathr-cache-v3';
 const urlsToCache = [
   './',
   './index.html',
